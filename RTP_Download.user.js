@@ -4,64 +4,65 @@
 // @description Quando não funciona mostra as flashvars
 // @namespace   somini
 // @include     http://www.rtp.pt/play/p*/e*
-// @include		http://www.rtp.pt/programa/tv/p*/c*
 // @grant       none
-// @version     1.3
+// @version     2.0
 // ==/UserScript==
 
-var prefixes = new Array();
-var replaces = new Array();
-function add(prefix,replace) {
-	var n = prefixes.length;
-	prefixes[n] = prefix;
-	replaces[n] = replace;
-}
-//audio, mp3 format
-prefixes[0] = "nas2.share/wavrss/";
-replaces[0] = "http://rsspod.rtp.pt/podcasts/";
-//video, mp4 format
-prefixes[1] = "nas2.share/h264/";
-replaces[1] = "http://rsspod.rtp.pt/videocasts/";
-//video, mp4 format
-prefixes[2] = "nas2.share//h264/"
-replaces[2] = "http://rsspod.rtp.pt/videocasts/";
-//video, flv format
-// From: http://www.rtp.pt/play/p917/e89154/rali-vinho-da-madeira-2012
-//prefixes[2] = "nas2.share/videos/auto/rali2012/ervdmadeira_20120724.flv";
-//replaces[2] = ???
-var flashvars;
-var regex = new RegExp("file=(.*?)&");
-
-var flashvars_o = document.getElementById("obj_player_prog");
-if (flashvars_o == null) {
-	flashvars_o = document.getElementById("player");
-}
-
-if (flashvars_o == null) {
-	flashvars = document.getElementsByClassName("player_media")[0].getElementsByTagName("script")[0].innerHTML;
-	regex = new RegExp('"file": "(.*?)"');
-}
-else {
-	flashvars = flashvars_o.getAttribute("flashvars");
-}
-
-var read = flashvars.match(regex)[1];
-var link = "";
-for (i=0; i<prefixes.length; i++) {
-	if (read.indexOf(prefixes[i]) == 0) {
-		link = replaces[i] + read.substring(prefixes[i].length);
+var files = [
+	{
+		"from"	: 'nas2.share/wavrss/',
+		"to"	: 'http://rsspod.rtp.pt/podcasts/',
+		"type"	: 'audio'
+	},
+	{
+		"from"	: 'nas2.share/h264/',
+		"to"	: 'http://rsspod.rtp.pt/videocasts/',
+		"type"	: 'audio'
 	}
+];
+function findText() {
+	var text, regex, res;
+	// Attempt 1: Last script in the body
+	var scripts = document.getElementsByTagName('script');
+	text = scripts[scripts.length - 1].innerHTML;
+	regex = /"file": "(.*?)"/;
+
+	res = text.match(regex)[1]; // Get the Regex's first group
+
+	return res;
 }
-var div_add = document.getElementsByTagName("article")[0];
-if (div_add == null) {
-	div_add = document.getElementById("player_id_prog");
+
+// Get the internal filepath
+var innerURL = findText();
+console.log("RTP Inner Link: "+innerURL);
+
+// Get the public filepath
+var outerURL;
+var keepGoing = (files.length !== 0);
+var idx = 0;
+while (keepGoing) {
+	var f = files[idx];
+	if (innerURL.startsWith(f.from)) {
+		console.log("Got a match: '"+f.from+"' matches '"+innerURL+"'");
+		outerURL = f.to + innerURL.substring(f.from.length);
+		keepGoing = false; // Matched
+	}
+	idx++;
+	keepGoing = (idx < files.length);
 }
-var a = document.createElement("a");
-if (link.length != 0) {
-	a.setAttribute("href",link);
-	a.appendChild(document.createTextNode("Link Directo"));
+console.log("RTP Real Link: "+outerURL);
+
+// Create a direct link, if it exists
+if (outerURL) {
+	var nodeParent = document.getElementsByTagName("article")[0];
+	var node = document.createElement("div");
+	var nodeLink = document.createElement("a");
+	node.setAttribute('style','width: 100%; height: 50px; background: red;');
+	nodeLink.setAttribute('href',outerURL);
+	nodeLink.appendChild(document.createTextNode("Link Directo"));
+	node.appendChild(nodeLink);
+	nodeParent.appendChild(node);
 }
 else {
-	a.appendChild(document.createTextNode(flashvars));
+	console.log("Couldn't find anything: "+innerURL);
 }
-div_add.appendChild(a);
