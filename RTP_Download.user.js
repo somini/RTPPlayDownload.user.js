@@ -5,7 +5,7 @@
 // @namespace   somini
 // @include     http://www.rtp.pt/play/p*/e*
 // @grant       none
-// @version     2.1
+// @version     3.0
 // ==/UserScript==
 
 var files = [
@@ -53,16 +53,17 @@ while (keepGoing) {
 console.log("RTP Real Link: "+outerURL);
 
 // Create a direct link, if it exists
+var nodeParent = document.getElementsByTagName("article")[0];
+var node = document.createElement("div");
+var nodeLink = document.createElement("a");
+node.setAttribute('style','width: 100%; height: 50px; background: red;');
 if (outerURL) {
-	var nodeParent = document.getElementsByTagName("article")[0];
-	var node = document.createElement("div");
-	var nodeLink = document.createElement("a");
-	node.setAttribute('style','width: 100%; height: 50px; background: red;');
 	nodeLink.setAttribute('href',outerURL);
 	nodeLink.appendChild(document.createTextNode("Link Directo"));
-	node.appendChild(nodeLink);
-	nodeParent.appendChild(node);
 }
 else {
-	console.log("Couldn't find anything: "+innerURL);
+	nodeLink.setAttribute('href','http://cdn-ondemand.rtp.pt'+innerURL);
+	nodeLink.appendChild(document.createTextNode("Link Alternativo"));
 }
+node.appendChild(nodeLink);
+nodeParent.appendChild(node);
