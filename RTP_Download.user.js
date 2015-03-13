@@ -5,17 +5,17 @@
 // @namespace   somini
 // @include     http://www.rtp.pt/play/p*/e*
 // @grant       none
-// @version     2.0
+// @version     2.1
 // ==/UserScript==
 
 var files = [
 	{
-		"from"	: 'nas2.share/wavrss/',
+		"from"	: '/nas2.share/wavrss/',
 		"to"	: 'http://rsspod.rtp.pt/podcasts/',
 		"type"	: 'audio'
 	},
 	{
-		"from"	: 'nas2.share/h264/',
+		"from"	: '/nas2.share/h264/',
 		"to"	: 'http://rsspod.rtp.pt/videocasts/',
 		"type"	: 'audio'
 	}
